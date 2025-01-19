@@ -1,0 +1,64 @@
+riderModule.iml
+/_ReSharper.Caches/
+
+# Rider-specific
+.idea/
+*.sln.iml
+
+# ASP.NET Core
+bin/
+obj/
+*.user
+*.rsuser
+*.suo
+*.sln.docstates
+
+# Logs
+logs/
+*.log
+log/
+
+# macOS-specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS file resource forks
+._*
+
+# Thumbnails
+Thumbs.db
+ehthumbs.db
+
+# System files
+Desktop.ini
+$RECYCLE.BIN/
+
+# Rider project-specific settings
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/dataSources/
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+.idea/vcs.xml
+
+# Rider backup and temp files
+.idea/**/storage_v2/
+.idea/**/shelf/
+.idea/scratches/
+.idea/**/tasks.xml
+
+# Package-specific
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Publish output
+publish/
+wwwroot/dist/
+wwwroot/.vs/
