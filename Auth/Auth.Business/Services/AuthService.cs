@@ -32,24 +32,22 @@ public class AuthService : IAuthService
         {
             throw new Exception($"User with login {login} already exists");
         }
-        
+
         var salt = GenerateSalt();
 
-        var user = new User
+        var userDraft = new User
         {
             Login = login,
             PasswordHash = GenerateHashPassword(password, salt),
-            Salt = salt
+            Salt = salt,
         };
 
-        var createdUser = _userRepository.Create(user);
-        
-        DateTime createdAt = DateTime.Now;
+        var createdUser = _userRepository.Create(userDraft);
         TimeSpan expirationDuration = TimeSpan.FromHours(EXPIRATION_DURATION_HOURS);
 
-        var jwtPayload = new JwtPayload(createdUser.Id, createdAt, expirationDuration);
+        var jwtPayload = new JwtPayload(createdUser.Id, createdUser.CreatedAt, expirationDuration);
         var jwt = GenerateJwt(JWT_HEADER, jwtPayload, SECRET_KEY);
-        
+
         return jwt;
     }
 
@@ -67,7 +65,7 @@ public class AuthService : IAuthService
             rng.GetBytes(saltBytes);
         }
 
-        return Base64Helper.FromBytesToBase64(saltBytes);
+        return Base64Helper.Base64UrlEncode(saltBytes);
     }
 
     private string GenerateHashPassword(string password, string salt)
@@ -76,39 +74,42 @@ public class AuthService : IAuthService
         {
             var saltedPassword = password + salt;
             byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedPassword));
-            return Base64Helper.FromBytesToBase64(hashBytes);
+            return Base64Helper.Base64UrlEncode(hashBytes);
         }
     }
 
     public string GenerateJwt(JwtHeader header, JwtPayload payload, string secretKey)
     {
         var headerJson = SerializeHelper.SerializeObject(header); // получили строковый json
-        var payloadJson = SerializeHelper.SerializeObject(payload); // получили строковый json
+        var payloadJson = SerializeHelper.SerializeObject(payload.Claims); // получили строковый json
 
-        var headerBase64 = Base64Helper.FromStringToBase64(headerJson);
-        var payloadBase64 = Base64Helper.FromStringToBase64(payloadJson);
+        var base64UrlHeader = Base64Helper.Base64UrlEncode(headerJson);
+        var base64UrlPayload = Base64Helper.Base64UrlEncode(payloadJson);
 
-        string signature = GenerateSignature(headerBase64, payloadBase64, secretKey);
+        string signature = GenerateSignature(base64UrlHeader, base64UrlPayload, secretKey);
 
-        return $"{headerBase64}.{payloadBase64}.{signature}";
+        return $"{base64UrlHeader}.{base64UrlPayload}.{signature}";
     }
 
-    private string GenerateSignature(string base64Header, string base64Payload, string secretKey)
+    private string GenerateSignature(string base64UrlHeader, string base64UrlPayload, string secretKey)
     {
-        var secketKeyBytes = Encoding.UTF8.GetBytes(secretKey);
+        var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
 
-        var cipherText = $"{base64Header}.{base64Payload}";
+        var cipherText = $"{base64UrlHeader}.{base64UrlPayload}";
         var cipherBytes = Encoding.UTF8.GetBytes(cipherText);
+        var hashBase64 = string.Empty;
 
-        var sha256 = new HMACSHA256(secketKeyBytes); // сущность подписи
-        byte[] hashBytes = sha256.ComputeHash(cipherBytes); // подпись { Header + Payload } в байтах
-        string hashBase64 = Base64Helper.FromBytesToBase64(hashBytes); // подпись { Header + Payload } в Base64
+        using (var HMACSHA256 = new HMACSHA256(secretKeyBytes))
+        {
+            byte[] hashBytes = HMACSHA256.ComputeHash(cipherBytes); // подпись { Header + Payload } в байтах
+            hashBase64 = Base64Helper.Base64UrlEncode(hashBytes); // подпись { Header + Payload } в Base64
+        }
 
         return hashBase64;
     }
 
-    public string ValidateJwt(string jwt)
+    public bool VerifyJwt(string jwt)
     {
-        throw new NotImplementedException();
+
     }
 }

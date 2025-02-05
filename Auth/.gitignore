@@ -45,6 +45,7 @@ $RECYCLE.BIN/
 .idea/dynamic.xml
 .idea/uiDesigner.xml
 .idea/vcs.xml
+.vs
 
 # Rider backup and temp files
 .idea/**/storage_v2/

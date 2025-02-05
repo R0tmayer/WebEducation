@@ -4,15 +4,41 @@ namespace Auth.Business.Helpers;
 
 public static class Base64Helper
 {
-    public static string FromStringToBase64(string plainText)
+    /// <summary>
+    /// From string to Base64Url
+    /// </summary>
+    /// <param name="plainText"></param>
+    /// <returns></returns>
+    public static string Base64UrlEncode(string plainText)
     {
         var bytes = Encoding.UTF8.GetBytes(plainText);
-        return Convert.ToBase64String(bytes);
+        return Base64UrlEncode(bytes);
     }
 
-    public static string FromBytesToBase64(byte[] bytes)
+    /// <summary>
+    /// From bytes to Base64Url
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <returns></returns>
+    public static string Base64UrlEncode(byte[] bytes)
     {
         var base64 = Convert.ToBase64String(bytes);
-        return base64;
+        var base64url = base64.TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        return base64url;
+    }
+
+    public static string Base64UrlDecode(string encodedString)
+    {
+        string base64 = encodedString.Replace('_', '/').Replace('-', '+');
+
+        switch(base64.Length % 4)
+        {
+            case 2: base64 += "=="; break;
+            case 3: base64 += "="; break;
+        }
+
+        byte[] bytes = Convert.FromBase64String(base64);
+        string originalText = Encoding.ASCII.GetString(bytes);
+        return originalText;
     }
 }

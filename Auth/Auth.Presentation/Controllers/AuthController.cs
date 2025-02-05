@@ -14,14 +14,21 @@ public class AuthController : Controller
         _authService = authService;
     }
     
-    [Route("register")]
+    [HttpPost("register")]
     public IActionResult Register([FromBody] RegisterDto registerDto)
     {
         var jwt = _authService.Register(registerDto.Login, registerDto.Password);
-        return Ok();
+        return Ok(jwt);
+    }
+
+    [HttpPost("verify")]
+    public IActionResult VerifyJwt([FromBody] string jwt)
+    {
+        var valid = _authService.VerifyJwt(jwt);
+        return Ok(valid);
     }
     
-    [Route("login")]
+    [HttpPost("login")]
     public IActionResult Login([FromBody] LoginDto loginDto)
     {
         _authService.Login(loginDto.Login, loginDto.Password);
